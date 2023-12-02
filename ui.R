@@ -16,7 +16,8 @@ shinyUI(fluidPage(
             
             conditionalPanel(
               condition = "input.plotType == 2",
-              selectizeInput("x", "Select Variable",
+              br(),
+              selectizeInput("x", "Select X Variable",
                              choices = c("Yards per Game" = "totalYards",
                                          "Pass Attempts per Game" = "passAttempts",
                                          "Pass Completions per Game" = "passCompletions",
@@ -46,6 +47,7 @@ shinyUI(fluidPage(
                           min = 5, max = 30, value = 15, step = 1)),
             conditionalPanel(
               condition = "input.plotType == 3",
+              br(),
               selectizeInput("x", "Select Variable",
                              choices = c("Yards per Game" = "totalYards",
                                          "Pass Attempts per Game" = "passAttempts",
@@ -113,6 +115,7 @@ shinyUI(fluidPage(
                                          "Sun Belt" = "Sun.Belt"))),
               conditionalPanel(
                 condition = "input.plotType == 4",
+                br(),
                 selectizeInput("x", "Select Variable",
                                choices = c("Yards per Game" = "totalYards",
                                            "Pass Attempts per Game" = "passAttempts",
@@ -144,8 +147,48 @@ shinyUI(fluidPage(
                                            "Bowl Eligibility" = "bowlEligible"))),
             conditionalPanel(
                 condition = "input.tabs1 == 'Modeling'",
+                br(),
                 sliderInput("trainProp", "Proportion of data to train",
-                            min = 0.5, max = 0.9, value = 0.7, step = 0.05))
+                            min = 0.5, max = 0.9, value = 0.7, step = 0.05),
+                br(),
+                h4("Prediction Parameters"),
+                selectizeInput("predConference", "Conference",
+                               choices = c("American Athletic" = "American.Athletic",
+                                           "Atlantic Coast" = "ACC",
+                                           "Big 12" = "Big.12",
+                                           "Big Ten" = "Big.Ten",
+                                           "Conference USA" = "Conference.USA",
+                                           "FBS Independents" = "FBS.Independents",
+                                           "Mid-American" = "Mid.American",
+                                           "Mountain West" = "Mountain.West",
+                                           "Pac-12" = "Pac.12",
+                                           "Southeastern" = "SEC",
+                                           "Sun Belt" = "Sun.Belt")),
+                numericInput("predPassAtt", "Pass Attempts per Game", value = 0),
+                numericInput("predPassComp", "Pass Completions per Game", value = 0),
+                numericInput("predPassYds", "Net Passing Yards per Game", value = 0),
+                numericInput("predPassTDs", "Passing TDs per Game", value = 0),
+                numericInput("predRushAtt", "Rush Attempts per Game", value = 0),
+                numericInput("predRushYds", "Rushing Yards per Game", value = 0),
+                numericInput("predRushTDs", "Rushing TDs per Game", value = 0),
+                numericInput("predFirst", "First Downs per Game", value = 0),
+                numericInput("predThird", "Third Down Conversion Rate", value = 0),
+                numericInput("predFourth", "Fourth Down Completion Rate", value = 0),
+                numericInput("predTurnover", "Turnover Differential", value = 0),
+                numericInput("predTOP", "Average Time of Possession (Seconds)", value = 0),
+                numericInput("predTFL", "Defense Tackles for Loss per Game", value = 0),
+                numericInput("predSacks", "Defense Sacks per Game", value = 0),
+                numericInput("predIntYds", "Interception Yards per Game", value = 0),
+                numericInput("predIntTDs", "Interception TDs per Game", value = 0),
+                numericInput("predPuntRet", "Punt Returns per Game", value = 0),
+                numericInput("predPuntYds", "Punt Return Yards per Game", value = 0),
+                numericInput("predPuntTDs", "Punt Return TDs per Game", value = 0),
+                numericInput("predKickRet", "Kick Returns per Game", value = 0),
+                numericInput("predKickYds", "Kick Return Yards per Game", value = 0),
+                numericInput("predKickTDs", "Kick Return TDs per Game", value = 0),
+                numericInput("predPen", "Penalties per Game", value = 0),
+                numericInput("predPenYds", "Penalty Yards per Game", value = 0),
+                actionButton("predict", "Predict"))
         ),
 
         mainPanel(
@@ -164,7 +207,10 @@ shinyUI(fluidPage(
                                                     "Most important variables in random forest model:",
                                                     plotOutput("rfPlot", height = "700")),
                                            tabPanel("Prediction",
-                                                    )))
+                                                    "The generalized linear model predicts that this team will reach bowl eligibility:",
+                                                    verbatimTextOutput("glmPred"),
+                                                    "The random forest model predicts that this team will reach bowl eligibility:",
+                                                    verbatimTextOutput("rfPred"))))
           )
         )
     )

@@ -29,6 +29,32 @@ function(input, output, session) {
   fbs2022$bowlEligible <- as.factor(fbs2022$bowlEligible)
   levels(fbs2022$bowlEligible) <- c("No", "Yes")
   
+  # predData <- data.frame(conference = "American.Athletic",
+  #                        kickReturnTDs = 0,
+  #                        passAttempts = 0,
+  #                        tacklesForLoss = 0,
+  #                        rushingAttempts = 0,
+  #                        firstDowns = 0,
+  #                        kickReturnYards = 0,
+  #                        passCompletions = 0,
+  #                        puntReturnYards = 0,
+  #                        interceptionTDs = 0,
+  #                        kickReturns = 0,
+  #                        penalties = 0,
+  #                        possessionTime = 0,
+  #                        rushingTDs = 0,
+  #                        interceptionYards = 0,
+  #                        rushingYards = 0,
+  #                        sacks = 0,
+  #                        netPassingYards = 0,
+  #                        puntReturnTDs = 0,
+  #                        puntReturns = 0,
+  #                        penaltyYards = 0,
+  #                        passingTDs = 0,
+  #                        thirdDownConversionRate = 0,
+  #                        fourthDownConversionRate = 0,
+  #                        turnoverDiff = 0)
+  
   getPlotType <- reactive({
     plotType <- input$plotType
   })
@@ -86,6 +112,41 @@ function(input, output, session) {
                    tuneGrid = data.frame(mtry = 1:5),
                    metric = "logLoss")
     varImpPlot(rffit$finalModel)
+  })
+  
+  observeEvent(input$predict, {
+    predData <- data.frame(conference = input$predConference,
+                           kickReturnTDs = input$predKickTDs,
+                           passAttempts = input$predPassAtt,
+                           tacklesForLoss = input$predTFL,
+                           rushingAttempts = input$predRushAtt,
+                           firstDowns = input$predFirst,
+                           kickReturnYards = input$predKickYds,
+                           passCompletions = input$predPassComp,
+                           puntReturnYards = input$predKickYds,
+                           interceptionTDs = input$predIntTDs,
+                           kickReturns = input$predKickRet,
+                           penalties = input$predPen,
+                           possessionTime = input$predTOP,
+                           rushingTDs = input$predRushTDs,
+                           interceptionYards = input$predIntYds,
+                           rushingYards = input$predRushYds,
+                           sacks = input$predSacks,
+                           netPassingYards = input$predPassYds,
+                           puntReturnTDs = input$predPuntTDs,
+                           puntReturns = input$predPuntRet,
+                           penaltyYards = input$predPenYds,
+                           passingTDs = input$predPassTDs,
+                           thirdDownConversionRate = input$predThird,
+                           fourthDownConversionRate = input$predFourth,
+                           turnoverDiff = input$predTurnover)
+    output$glmPred <- renderPrint({
+      predict(glmfit, newdata = predData)
+    })
+    
+    output$rfPred <- renderPrint({
+      predict(rffit, newdata = predData)
+    })
   })
   
   output$EDAPlot <- renderPlot({
