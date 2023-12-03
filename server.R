@@ -29,49 +29,9 @@ function(input, output, session) {
   fbs2022$bowlEligible <- as.factor(fbs2022$bowlEligible)
   levels(fbs2022$bowlEligible) <- c("No", "Yes")
   
-  # predData <- data.frame(conference = "American.Athletic",
-  #                        kickReturnTDs = 0,
-  #                        passAttempts = 0,
-  #                        tacklesForLoss = 0,
-  #                        rushingAttempts = 0,
-  #                        firstDowns = 0,
-  #                        kickReturnYards = 0,
-  #                        passCompletions = 0,
-  #                        puntReturnYards = 0,
-  #                        interceptionTDs = 0,
-  #                        kickReturns = 0,
-  #                        penalties = 0,
-  #                        possessionTime = 0,
-  #                        rushingTDs = 0,
-  #                        interceptionYards = 0,
-  #                        rushingYards = 0,
-  #                        sacks = 0,
-  #                        netPassingYards = 0,
-  #                        puntReturnTDs = 0,
-  #                        puntReturns = 0,
-  #                        penaltyYards = 0,
-  #                        passingTDs = 0,
-  #                        thirdDownConversionRate = 0,
-  #                        fourthDownConversionRate = 0,
-  #                        turnoverDiff = 0)
-  
   getPlotType <- reactive({
     plotType <- input$plotType
   })
-  # getX <- reactive({
-  #   x <- input$x
-  # })
-  # getY <- reactive({
-  #   y <- input$y
-  # })
-  # getZ <- reactive({
-  #   z <- input$z
-  # })
-  # getW <- reactive({
-  #   w <- input$w
-  # })
-  
-  
 
   output$glmSummary <- renderPrint({
     set.seed(1647)
@@ -81,7 +41,8 @@ function(input, output, session) {
     test_data <- fbs2022[-train, c(2, 22:46)]
     
     glmfit <- train(bowlEligible ~ conference + rushingYards + 
-                      netPassingYards + sacks + penaltyYards + puntReturnYards +
+                      netPassingYards + sacks + firstDowns +
+                      interceptionYards + puntReturnYards +
                       thirdDownConversionRate + fourthDownConversionRate + 
                       turnoverDiff + possessionTime,
                     data = train_data,
@@ -102,7 +63,11 @@ function(input, output, session) {
     train_data <- fbs2022[train, c(2, 22:46)]
     test_data <- fbs2022[-train, c(2, 22:46)]
     
-    rffit <- train(bowlEligible ~ .,
+    rffit <- train(bowlEligible ~ conference + rushingYards + 
+                     netPassingYards + sacks + firstDowns +
+                     interceptionYards + puntReturnYards +
+                     thirdDownConversionRate + fourthDownConversionRate + 
+                     turnoverDiff + possessionTime,
                    data = train_data,
                    method = "rf",
                    trControl = trainControl(method = "cv",
@@ -116,27 +81,27 @@ function(input, output, session) {
   
   observeEvent(input$predict, {
     predData <- data.frame(conference = input$predConference,
-                           kickReturnTDs = input$predKickTDs,
-                           passAttempts = input$predPassAtt,
-                           tacklesForLoss = input$predTFL,
-                           rushingAttempts = input$predRushAtt,
+                           kickReturnTDs = 0,
+                           passAttempts = 0,
+                           tacklesForLoss = 0,
+                           rushingAttempts = 0,
                            firstDowns = input$predFirst,
-                           kickReturnYards = input$predKickYds,
-                           passCompletions = input$predPassComp,
-                           puntReturnYards = input$predKickYds,
-                           interceptionTDs = input$predIntTDs,
-                           kickReturns = input$predKickRet,
-                           penalties = input$predPen,
+                           kickReturnYards = 0,
+                           passCompletions = 0,
+                           puntReturnYards = input$predPuntYds,
+                           interceptionTDs = 0,
+                           kickReturns = 0,
+                           penalties = 0,
                            possessionTime = input$predTOP,
-                           rushingTDs = input$predRushTDs,
+                           rushingTDs = 0,
                            interceptionYards = input$predIntYds,
                            rushingYards = input$predRushYds,
                            sacks = input$predSacks,
                            netPassingYards = input$predPassYds,
-                           puntReturnTDs = input$predPuntTDs,
-                           puntReturns = input$predPuntRet,
-                           penaltyYards = input$predPenYds,
-                           passingTDs = input$predPassTDs,
+                           puntReturnTDs = 0,
+                           puntReturns = 0,
+                           penaltyYards = 0,
+                           passingTDs = 0,
                            thirdDownConversionRate = input$predThird,
                            fourthDownConversionRate = input$predFourth,
                            turnoverDiff = input$predTurnover)
@@ -164,5 +129,6 @@ function(input, output, session) {
     } else {
       g + geom_bar(aes(x = total.wins, fill = conference))
     }
+    
   })
 }
