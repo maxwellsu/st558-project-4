@@ -33,78 +33,82 @@ function(input, output, session) {
     plotType <- input$plotType
   })
   
-  getTrainProp <- reactive({
-    trainProp <- input$trainProp
-  })
+  getGLMFit <- reactive({
+    set.seed(1647)
 
-  output$glmSummary <- renderPrint({
-    trainProp <- getTrainProp()
+    train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
+    train_data <- fbs2022[train, c(2, 22:46)]
+    train(bowlEligible ~ conference + rushingYards + 
+            netPassingYards + sacks + firstDowns +
+            interceptionYards + puntReturnYards +
+            thirdDownConversionRate + fourthDownConversionRate + 
+            turnoverDiff + possessionTime,
+          data = train_data,
+          method = "glm",
+          family = "binomial",
+          trControl = trainControl(method = "cv",
+                                   number = 5,
+                                   classProbs = TRUE,
+                                   summaryFunction=mnLogLoss),
+          metric = "logLoss")
+  })
+  
+  getRFFit <- reactive({
     set.seed(1647)
     
     train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
     train_data <- fbs2022[train, c(2, 22:46)]
-    test_data <- fbs2022[-train, c(2, 22:46)]
-    
-    glmfit <- train(bowlEligible ~ conference + rushingYards + 
-                      netPassingYards + sacks + firstDowns +
-                      interceptionYards + puntReturnYards +
-                      thirdDownConversionRate + fourthDownConversionRate + 
-                      turnoverDiff + possessionTime,
-                    data = train_data,
-                    method = "glm",
-                    family = "binomial",
-                    trControl = trainControl(method = "cv",
-                                             number = 5,
-                                             classProbs = TRUE,
-                                             summaryFunction=mnLogLoss),
-                    metric = "logLoss")
+    train(bowlEligible ~ conference + rushingYards + 
+            netPassingYards + sacks + firstDowns +
+            interceptionYards + puntReturnYards +
+            thirdDownConversionRate + fourthDownConversionRate + 
+            turnoverDiff + possessionTime,
+          data = train_data,
+          method = "rf",
+          trControl = trainControl(method = "cv",
+                                   number = 5,
+                                   classProbs = TRUE,
+                                   summaryFunction=mnLogLoss),
+          tuneGrid = data.frame(mtry = 1:5),
+          metric = "logLoss")
+  })
+
+  getTestData <- reactive({
+    set.seed(1647)
+    train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
+    fbs2022[-train, c(2, 22:46)]
+  })
+  
+  output$glmSummary <- renderPrint({
+    glmfit <- getGLMFit()
     summary(glmfit)
   })
   
   output$rfPlot <- renderPlot({
-    trainProp <- getTrainProp()
-    set.seed(1647)
-    
-    train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
-    train_data <- fbs2022[train, c(2, 22:46)]
-    test_data <- fbs2022[-train, c(2, 22:46)]
-    
-    rffit <- train(bowlEligible ~ conference + rushingYards + 
-                     netPassingYards + sacks + firstDowns +
-                     interceptionYards + puntReturnYards +
-                     thirdDownConversionRate + fourthDownConversionRate + 
-                     turnoverDiff + possessionTime,
-                   data = train_data,
-                   method = "rf",
-                   trControl = trainControl(method = "cv",
-                                            number = 5,
-                                            classProbs = TRUE,
-                                            summaryFunction=mnLogLoss),
-                   tuneGrid = data.frame(mtry = 1:5),
-                   metric = "logLoss")
+    rffit <- getRFFit()
     varImpPlot(rffit$finalModel)
   })
   
   output$glmLogLoss <- renderPrint({
-    trainProp <- getTrainProp()
+    glmfit <- getGLMFit()
     glmfit$results$logLoss
   })
   
   output$rfLogLoss <- renderPrint({
-    trainProp <- getTrainProp()
+    rffit <- getRFFit()
     min(rffit$results$logLoss)
   })
-  
+
   output$glmErrorMatrix <- renderPrint({
-    trainProp <- getTrainProp()
-    predGlm <- predict(glmfit, newdata = train_data)
-    confusionMatrix(predGlm, train_data$bowlEligible)
+    test_data <- getTestData()
+    predGlm <- predict(glmfit, newdata = test_data)
+    confusionMatrix(predGlm, test_data$bowlEligible)
   })
   
   output$rfErrorMatrix <- renderPrint({
-    trainProp <- getTrainProp()
-    predRf <- predict(rffit, newdata = train_data)
-    confusionMatrix(predRf, train_data$bowlEligible)
+    test_data <- getTestData()
+    predRf <- predict(rffit, newdata = test_data)
+    confusionMatrix(predRf, test_data$bowlEligible)
   })
   
   observeEvent(input$predict, {
@@ -134,10 +138,12 @@ function(input, output, session) {
                            fourthDownConversionRate = input$predFourth,
                            turnoverDiff = input$predTurnover)
     output$glmPred <- renderPrint({
+      glmfit <- getGLMFit()
       predict(glmfit, newdata = predData)
     })
     
     output$rfPred <- renderPrint({
+      rffit <- getRFFit()
       predict(rffit, newdata = predData)
     })
   })
