@@ -100,13 +100,15 @@ function(input, output, session) {
   })
 
   output$glmErrorMatrix <- renderPrint({
-    glmfit <- getTestData()
+    glmfit <- getGLMFit()
+    test_data <- getTestData()
     predGlm <- predict(glmfit, newdata = test_data)
     confusionMatrix(predGlm, test_data$bowlEligible)
   })
   
   output$rfErrorMatrix <- renderPrint({
-    rffit <- getTestData()
+    rffit <- getRFFit()
+    test_data <- getTestData()
     predRf <- predict(rffit, newdata = test_data)
     confusionMatrix(predRf, test_data$bowlEligible)
   })
