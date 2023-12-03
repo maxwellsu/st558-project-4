@@ -32,8 +32,13 @@ function(input, output, session) {
   getPlotType <- reactive({
     plotType <- input$plotType
   })
+  
+  getTrainProp <- reactive({
+    trainProp <- input$trainProp
+  })
 
   output$glmSummary <- renderPrint({
+    trainProp <- getTrainProp()
     set.seed(1647)
     
     train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
@@ -57,6 +62,7 @@ function(input, output, session) {
   })
   
   output$rfPlot <- renderPlot({
+    trainProp <- getTrainProp()
     set.seed(1647)
     
     train <- createDataPartition(1:nrow(fbs2022), p = input$trainProp, list = FALSE)
@@ -77,6 +83,28 @@ function(input, output, session) {
                    tuneGrid = data.frame(mtry = 1:5),
                    metric = "logLoss")
     varImpPlot(rffit$finalModel)
+  })
+  
+  output$glmLogLoss <- renderPrint({
+    trainProp <- getTrainProp()
+    glmfit$results$logLoss
+  })
+  
+  output$rfLogLoss <- renderPrint({
+    trainProp <- getTrainProp()
+    min(rffit$results$logLoss)
+  })
+  
+  output$glmErrorMatrix <- renderPrint({
+    trainProp <- getTrainProp()
+    predGlm <- predict(glmfit, newdata = train_data)
+    confusionMatrix(predGlm, train_data$bowlEligible)
+  })
+  
+  output$rfErrorMatrix <- renderPrint({
+    trainProp <- getTrainProp()
+    predRf <- predict(rffit, newdata = train_data)
+    confusionMatrix(predRf, train_data$bowlEligible)
   })
   
   observeEvent(input$predict, {

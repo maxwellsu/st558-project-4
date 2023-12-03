@@ -1,5 +1,6 @@
 library(shiny)
 library(ggplot2)
+library(mathjaxr)
 
 shinyUI(fluidPage(
 
@@ -184,16 +185,64 @@ shinyUI(fluidPage(
                                                     p("Two models will be created to model FBS bowl eligibility. 
                                                       The two classification method will be generalized linear 
                                                       regression (GLM) and random forests."),
-                                                    p("GLM models ")),
+                                                    p("GLM models are a variant of linear models that connect the 
+                                                      output to the prediction values by means of a link function. 
+                                                      It produces coefficients for each parameter (including the 
+                                                      intercept) that takes the form"),
+                                                    withMathJax(p("$$Y=X\\beta$$")),
+                                                    withMathJax(p("where Y is the predicted response, 
+                                                                   X is the predictors,
+                                                                  and the coefficients 
+                                                                  $$\\beta = (X^tX)^{-1}(X^tY)$$")),
+                                                    p("Random forest models build multiple tree-based claassification 
+                                                      models, each using a subset of the available predictors. The 
+                                                      resulting predictor is the most prevalent of each model's predictions. 
+                                                      This provides an advantage over standard tree based models by reducing 
+                                                      the variance of the model and increasing resillience to changes in values."),
+                                                    p("One of the biggest advantages of random forests is their built-in 
+                                                      variable selection, meaning that which variables are used to model do not have 
+                                                      to be filtered beforehand to select relevant variables. However, this 
+                                                      comes at a significant overhead when compared to GLM models."),
+                                                    p("Due to heavy correlations between certain predictors, the only variables 
+                                                      selected will be"),
+                                                    p("- Conference"),
+                                                    p("- Average net passing yards"),
+                                                    p("- Average rushing yards"),
+                                                    p("- Average first downs"),
+                                                    p("- Third down conversion rate"),
+                                                    p("- Fourth down conversion rate"),
+                                                    p("- Turnover differential"),
+                                                    p("- Average time of possession (seconds)"),
+                                                    p("- Average sacks"),
+                                                    p("- Average interception yards"),
+                                                    p("- Average punt return yards."),
+                                                    p("The aim of this variable selection is to reduce the correlation 
+                                                      between predictors while covering all facets of the game 
+                                                      (offense, defense, special teams). The models will be judged on 
+                                                      log loss, where lower values are better. For replication purposes, 
+                                                      the random seed 1647 will be used.")
+                                                    ),
                                            tabPanel("Model Fitting",
                                                     "Summary of generalized linear model and fit statistics:",
                                                     verbatimTextOutput("glmSummary"),
+                                                    "The generalized linear model has log loss:",
+                                                    verbatimTextOutput("glmLogLoss"),
+                                                    "Applying the model to the unselected testing data produces 
+                                                        the following confusion matrix:",
+                                                    verbatimTextOutput("glmErrorMatrix"),
                                                     "Most important variables in random forest model:",
-                                                    plotOutput("rfPlot", height = "700")),
+                                                    plotOutput("rfPlot", height = "700"),
+                                                    "The random forest model has log loss:",
+                                                    verbatimTextOutput("rfLogLoss"),
+                                                    "Applying the model to the unselected testing data produces 
+                                                        the following confusion matrix:",
+                                                    verbatimTextOutput("rfErrorMatrix")),
                                            tabPanel("Prediction",
-                                                    "The generalized linear model predicts that this team will reach bowl eligibility:",
+                                                    "The generalized linear model predicts that this team will 
+                                                    reach bowl eligibility:",
                                                     verbatimTextOutput("glmPred"),
-                                                    "The random forest model predicts that this team will reach bowl eligibility:",
+                                                    "The random forest model predicts that this team will 
+                                                    reach bowl eligibility:",
                                                     verbatimTextOutput("rfPred"))))
           )
         )
