@@ -12,7 +12,7 @@ shinyUI(fluidPage(
             conditionalPanel(
                 condition = "input.tabs1 != 'About'",
                 radioButtons("plotType", "Select Plot Type",
-                             choices = c("Barplot of Total Wins per Conference" = 1,
+                             choices = c("Barplot of Total Wins by Conference" = 1,
                                          "Histogram (1 - variable)" = 2,
                                          "Scatterplot (2 - variable)" = 3,
                                          "Boxplot (2 - variable)" = 4))
