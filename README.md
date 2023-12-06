@@ -26,7 +26,7 @@ install.packages("ggplot2")
 install.packages("mathjaxr")
 ```
 
-The following code can be executed to run this package:
+The following code can be run to start this application:
 
 ```{r, eval = FALSE}
 shiny::runGitHub("st558-project-4", "maxwellsu")
